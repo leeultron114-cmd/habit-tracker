@@ -7,14 +7,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const emptyState = document.getElementById('emptyState');
     const habitCountDisplay = document.getElementById('habitCount');
     const toast = document.getElementById('toast');
+    const habitFrequency = document.getElementById('habitFrequency');
+    const targetGroup = document.getElementById('targetGroup');
+    const habitTarget = document.getElementById('habitTarget');
 
     let habits = JSON.parse(localStorage.getItem('habits')) || [];
+
+    habitFrequency.addEventListener('change', (e) => {
+        if (e.target.value === 'weekly') {
+            targetGroup.style.display = 'flex';
+        } else {
+            targetGroup.style.display = 'none';
+        }
+    });
 
     function init() {
         updateDateDisplay();
         renderHabits();
     }
-    
+
     function getLocalDateString() {
         const d = new Date();
         const year = d.getFullYear();
@@ -35,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addHabitForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const habitName = habitInput.value.trim();
-        
+
         if (habitName) {
             const newHabit = {
                 id: Date.now().toString(),
@@ -43,13 +54,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 createdAt: new Date().getTime(),
                 currentStreak: 0,
                 maxStreak: 0,
-                completedDates: []
+                completedDates: [],
+                frequency: habitFrequency.value,
+                target: habitFrequency.value === 'weekly' ? parseInt(habitTarget.value, 10) : 0
             };
-            
+
             habits.push(newHabit);
             saveHabits();
             habitInput.value = '';
-            
+            habitFrequency.value = 'daily';
+            habitTarget.value = '3';
+            targetGroup.style.display = 'none';
+
             renderHabits();
             showToast(`"${habitName}" added!`);
         }
@@ -66,11 +82,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isCompletedToday) {
             habit.completedDates = habit.completedDates.filter(date => date !== today);
         } else {
-            if(!habit.completedDates.includes(today)){
+            if (!habit.completedDates.includes(today)) {
                 habit.completedDates.push(today);
             }
         }
-        
+
         habit.completedDates.sort();
 
         recalculateStreaks(habit);
@@ -78,42 +94,104 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHabits();
     }
 
+    function getWeekStartingDate(dateString) {
+        const [y, m, d] = dateString.split('-');
+        const date = new Date(y, m - 1, d);
+        const day = date.getDay();
+        const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(date.setDate(diff));
+        return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+    }
+
+    function recalculateWeeklyStreaks(habit) {
+        const target = habit.target || 3;
+        const weekCounts = {};
+
+        habit.completedDates.forEach(date => {
+            const week = getWeekStartingDate(date);
+            weekCounts[week] = (weekCounts[week] || 0) + 1;
+        });
+
+        const currentWeekString = getWeekStartingDate(getLocalDateString());
+        habit.currentWeekProgress = weekCounts[currentWeekString] || 0;
+
+        let effectiveStreak = 0;
+        let iterWeekString = currentWeekString;
+        let iterDate = new Date();
+        // Extract y,m,d from iterWeekString to avoid timezone issues when setting iterDate
+        let [yw, mw, dw] = iterWeekString.split('-');
+        iterDate = new Date(yw, mw - 1, dw);
+
+        if ((weekCounts[iterWeekString] || 0) >= target) {
+            effectiveStreak++;
+            iterDate.setDate(iterDate.getDate() - 7);
+            iterWeekString = `${iterDate.getFullYear()}-${String(iterDate.getMonth() + 1).padStart(2, '0')}-${String(iterDate.getDate()).padStart(2, '0')}`;
+        } else {
+            iterDate.setDate(iterDate.getDate() - 7);
+            iterWeekString = `${iterDate.getFullYear()}-${String(iterDate.getMonth() + 1).padStart(2, '0')}-${String(iterDate.getDate()).padStart(2, '0')}`;
+            if ((weekCounts[iterWeekString] || 0) < target) {
+                habit.currentStreak = 0;
+                return;
+            }
+        }
+
+        while (true) {
+            if ((weekCounts[iterWeekString] || 0) >= target) {
+                effectiveStreak++;
+                iterDate.setDate(iterDate.getDate() - 7);
+                iterWeekString = `${iterDate.getFullYear()}-${String(iterDate.getMonth() + 1).padStart(2, '0')}-${String(iterDate.getDate()).padStart(2, '0')}`;
+            } else {
+                break;
+            }
+        }
+
+        habit.currentStreak = effectiveStreak;
+        if (effectiveStreak > habit.maxStreak) {
+            habit.maxStreak = effectiveStreak;
+        }
+    }
+
     function recalculateStreaks(habit) {
+        if (habit.frequency === 'weekly') {
+            recalculateWeeklyStreaks(habit);
+            return;
+        }
+
         let effectiveStreak = 0;
         const sortedDates = [...habit.completedDates].sort().reverse();
-        
-        if(sortedDates.length === 0) {
+
+        if (sortedDates.length === 0) {
             habit.currentStreak = 0;
             return;
         }
-        
+
         let targetDate = new Date();
         let targetString = getLocalDateString();
-        
+
         if (sortedDates.includes(targetString)) {
             effectiveStreak++;
             targetDate.setDate(targetDate.getDate() - 1);
         } else {
             targetDate.setDate(targetDate.getDate() - 1);
-            let ytdString = `${targetDate.getFullYear()}-${String(targetDate.getMonth()+1).padStart(2,'0')}-${String(targetDate.getDate()).padStart(2,'0')}`;
-            if(!sortedDates.includes(ytdString)) {
+            let ytdString = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+            if (!sortedDates.includes(ytdString)) {
                 habit.currentStreak = 0;
                 return;
             }
         }
-        
-        while(true) {
-             let iterString = `${targetDate.getFullYear()}-${String(targetDate.getMonth()+1).padStart(2,'0')}-${String(targetDate.getDate()).padStart(2,'0')}`;
-             if(sortedDates.includes(iterString)){
-                 effectiveStreak++;
-                 targetDate.setDate(targetDate.getDate() - 1);
-             } else {
-                 break;
-             }
+
+        while (true) {
+            let iterString = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+            if (sortedDates.includes(iterString)) {
+                effectiveStreak++;
+                targetDate.setDate(targetDate.getDate() - 1);
+            } else {
+                break;
+            }
         }
-        
+
         habit.currentStreak = effectiveStreak;
-        if(effectiveStreak > habit.maxStreak) {
+        if (effectiveStreak > habit.maxStreak) {
             habit.maxStreak = effectiveStreak;
         }
     }
@@ -137,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderHabits() {
         habitsGrid.innerHTML = '';
         const today = getLocalDateString();
-        
+
         const activeHabits = habits.length;
         habitCountDisplay.textContent = `${activeHabits} Active`;
 
@@ -153,11 +231,15 @@ document.addEventListener('DOMContentLoaded', () => {
         habits.forEach((habit, index) => {
             const isCompletedToday = habit.completedDates.includes(today);
             recalculateStreaks(habit);
-            
+
+            const isWeekly = habit.frequency === 'weekly';
+            const streakText = isWeekly ? `${habit.currentStreak} wk${habit.currentStreak !== 1 ? 's' : ''}` : `${habit.currentStreak} day${habit.currentStreak !== 1 ? 's' : ''}`;
+            const targetText = isWeekly ? `🎯 ${habit.currentWeekProgress || 0}/${habit.target} this wk` : `Total: ${habit.completedDates.length}`;
+
             const card = document.createElement('div');
             card.className = `habit-card ${isCompletedToday ? 'completed' : ''}`;
             card.style.animationDelay = `${index * 0.05}s`;
-            
+
             card.innerHTML = `
                 <div class="habit-info" style="cursor: pointer;">
                     <button class="check-btn" aria-label="Toggle habit completion" data-id="${habit.id}">
@@ -166,11 +248,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         </svg>
                     </button>
                     <div class="habit-details">
-                        <h3>${escapeHtml(habit.name)}</h3>
+                        <h3>${escapeHtml(habit.name)} <span style="font-size: 0.75rem; font-weight: 300; background: var(--card-border); padding: 2px 6px; border-radius: 6px; margin-left: 6px;">${isWeekly ? 'Weekly' : 'Daily'}</span></h3>
                         <div class="habit-meta">
-                            <span class="streak" title="Current Streak">🔥 ${habit.currentStreak} day${habit.currentStreak !== 1 ? 's' : ''}</span>
+                            <span class="streak" title="Current Streak">🔥 ${streakText}</span>
                             <span>•</span>
-                            <span>Total: ${habit.completedDates.length}</span>
+                            <span>${targetText}</span>
                         </div>
                     </div>
                 </div>
@@ -189,10 +271,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.stopPropagation();
                 toggleHabit(habit.id);
             });
-            
+
             const habitInfoArea = card.querySelector('.habit-info');
             habitInfoArea.addEventListener('click', (e) => {
-                if(!e.target.closest('.check-btn')) {
+                if (!e.target.closest('.check-btn')) {
                     toggleHabit(habit.id);
                 }
             });
@@ -209,15 +291,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function escapeHtml(unsafe) {
         return unsafe
-             .replace(/&/g, "&amp;")
-             .replace(/</g, "&lt;")
-             .replace(/>/g, "&gt;")
-             .replace(/"/g, "&quot;")
-             .replace(/'/g, "&#039;");
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 
     init();
-    
+
     setInterval(() => {
         updateDateDisplay();
     }, 60000);

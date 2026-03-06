@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div class="app-container">
         <header>
@@ -21,10 +23,37 @@
             <section class="add-habit-section">
                 <form id="addHabitForm" class="add-habit-form">
                     <div class="input-glow">
-                        <input type="text" id="habitInput" placeholder="What habit do you want to build?" required autocomplete="off">
+                        <input type="text" id="habitInput" placeholder="What habit do you want to build?" required
+                            autocomplete="off">
                         <button type="submit" class="btn-primary" aria-label="Add Habit">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
                         </button>
+                    </div>
+
+                    <div class="habit-options">
+                        <div class="option-group">
+                            <label for="habitFrequency">Frequency</label>
+                            <select id="habitFrequency" class="custom-select">
+                                <option value="daily">Every Day</option>
+                                <option value="weekly">Weekly Target</option>
+                            </select>
+                        </div>
+
+                        <div class="option-group target-group" id="targetGroup" style="display: none;">
+                            <label for="habitTarget">Days per week</label>
+                            <select id="habitTarget" class="custom-select">
+                                <option value="1">1 day</option>
+                                <option value="2">2 days</option>
+                                <option value="3" selected>3 days</option>
+                                <option value="4">4 days</option>
+                                <option value="5">5 days</option>
+                                <option value="6">6 days</option>
+                            </select>
+                        </div>
                     </div>
                 </form>
             </section>
@@ -34,11 +63,11 @@
                     <h2>Your Habits</h2>
                     <span class="habit-count" id="habitCount">0 Active</span>
                 </div>
-                
+
                 <div class="habits-grid" id="habitsGrid">
                     <!-- Dynamic Habits List -->
                 </div>
-                
+
                 <div class="empty-state" id="emptyState">
                     <div class="empty-icon">🌱</div>
                     <h3>No habits yet</h3>
@@ -47,10 +76,11 @@
             </section>
         </main>
     </div>
-    
+
     <!-- Toast Notification -->
     <div id="toast" class="toast">Habit added successfully!</div>
 
     <script src="app.js"></script>
 </body>
+
 </html>
