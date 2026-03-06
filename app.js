@@ -275,6 +275,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function generateCalendarHTML(habit) {
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+
+        let html = '<div class="calendar-header-row">';
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        days.forEach(d => {
+            html += `<div class="calendar-header-cell">${d}</div>`;
+        });
+        html += '</div><div class="calendar-grid">';
+
+        const startDayOfWeek = firstDay.getDay();
+        for (let i = 0; i < startDayOfWeek; i++) {
+            html += `<div class="calendar-day empty"></div>`;
+        }
+
+        const todayStr = getLocalDateString();
+        for (let d = 1; d <= lastDay.getDate(); d++) {
+            const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const isCompleted = habit.completedDates.includes(dateStr);
+            const isToday = dateStr === todayStr;
+
+            let classes = ['calendar-day'];
+            if (isCompleted) classes.push('active');
+            if (isToday) classes.push('today');
+
+            html += `<div class="${classes.join(' ')}">${d}</div>`;
+        }
+        html += '</div>';
+        return html;
+    }
+
     window.deleteHabit = deleteHabit;
     function deleteHabit(id) {
         habits = habits.filter(h => h.id !== id);
@@ -316,38 +351,51 @@ document.addEventListener('DOMContentLoaded', () => {
             const targetText = isWeekly ? `🎯 ${habit.currentWeekProgress || 0}/${habit.target} this wk` : `Total: ${habit.completedDates.length}`;
 
             const card = document.createElement('div');
-            card.className = `habit-card ${isCompletedToday ? 'completed' : ''}`;
+            card.className = `habit-card-container ${isCompletedToday ? 'completed' : ''}`;
             card.style.animationDelay = `${index * 0.05}s`;
 
             card.innerHTML = `
-                <div class="habit-info" style="cursor: pointer;">
-                    <button class="check-btn" aria-label="Toggle habit completion" data-id="${habit.id}">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                    </button>
-                    <div class="habit-details">
-                        <h3>${escapeHtml(habit.name)} <span style="font-size: 0.75rem; font-weight: 300; background: var(--card-border); padding: 2px 6px; border-radius: 6px; margin-left: 6px;">${isWeekly ? 'Weekly' : 'Daily'}</span></h3>
-                        <div class="habit-meta">
-                            <span class="streak" title="Current Streak">🔥 ${streakText}</span>
-                            <span>•</span>
-                            <span>${targetText}</span>
+                <div class="habit-card">
+                    <div class="habit-info" style="cursor: pointer;" title="Toggle Habit Status">
+                        <button class="check-btn" aria-label="Toggle habit completion" data-id="${habit.id}">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </button>
+                        <div class="habit-details">
+                            <h3>${escapeHtml(habit.name)} <span style="font-size: 0.75rem; font-weight: 300; background: var(--card-border); padding: 2px 6px; border-radius: 6px; margin-left: 6px;">${isWeekly ? 'Weekly' : 'Daily'}</span></h3>
+                            <div class="habit-meta">
+                                <span class="streak" title="Current Streak">🔥 ${streakText}</span>
+                                <span>•</span>
+                                <span>${targetText}</span>
+                            </div>
                         </div>
                     </div>
+                    <div class="habit-actions">
+                        <button class="action-btn calendar-btn" title="Toggle Calendar">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </button>
+                        <button class="action-btn edit-btn" data-id="${habit.id}" title="Edit Habit">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn delete" data-id="${habit.id}" title="Delete Habit">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
-                <div class="habit-actions">
-                    <button class="action-btn edit-btn" data-id="${habit.id}" title="Edit Habit">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                    </button>
-                    <button class="action-btn delete" data-id="${habit.id}" title="Delete Habit">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                    </button>
+                <div class="habit-calendar-wrapper" id="calendar-${habit.id}">
+                    ${generateCalendarHTML(habit)}
                 </div>
             `;
 
@@ -362,6 +410,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!e.target.closest('.check-btn')) {
                     toggleHabit(habit.id);
                 }
+            });
+
+            const calendarBtn = card.querySelector('.calendar-btn');
+            calendarBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const wrapper = card.querySelector('.habit-calendar-wrapper');
+                wrapper.classList.toggle('show');
             });
 
             const editBtn = card.querySelector('.edit-btn');
