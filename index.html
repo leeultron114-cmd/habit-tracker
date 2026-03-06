@@ -77,6 +77,49 @@
         </main>
     </div>
 
+    <!-- Edit Habit Modal -->
+    <div id="editHabitModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Habit</h2>
+                <button class="close-btn" id="closeModalBtn" aria-label="Close modal">&times;</button>
+            </div>
+            <form id="editHabitForm" class="add-habit-form edit-form">
+                <input type="hidden" id="editHabitId">
+                <div class="input-glow">
+                    <input type="text" id="editHabitInput" placeholder="Habit name" required autocomplete="off">
+                </div>
+
+                <div class="habit-options">
+                    <div class="option-group">
+                        <label for="editHabitFrequency">Frequency</label>
+                        <select id="editHabitFrequency" class="custom-select">
+                            <option value="daily">Every Day</option>
+                            <option value="weekly">Weekly Target</option>
+                        </select>
+                    </div>
+
+                    <div class="option-group target-group" id="editTargetGroup" style="display: none;">
+                        <label for="editHabitTarget">Days per week</label>
+                        <select id="editHabitTarget" class="custom-select">
+                            <option value="1">1 day</option>
+                            <option value="2">2 days</option>
+                            <option value="3" selected>3 days</option>
+                            <option value="4">4 days</option>
+                            <option value="5">5 days</option>
+                            <option value="6">6 days</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelEditBtn">Cancel</button>
+                    <button type="submit" class="btn-primary edit-save-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast">Habit added successfully!</div>
 

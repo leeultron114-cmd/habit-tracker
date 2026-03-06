@@ -11,6 +11,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetGroup = document.getElementById('targetGroup');
     const habitTarget = document.getElementById('habitTarget');
 
+    // Edit Modal Elements
+    const editHabitModal = document.getElementById('editHabitModal');
+    const editHabitForm = document.getElementById('editHabitForm');
+    const editHabitId = document.getElementById('editHabitId');
+    const editHabitInput = document.getElementById('editHabitInput');
+    const editHabitFrequency = document.getElementById('editHabitFrequency');
+    const editTargetGroup = document.getElementById('editTargetGroup');
+    const editHabitTarget = document.getElementById('editHabitTarget');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+
     let habits = JSON.parse(localStorage.getItem('habits')) || [];
 
     habitFrequency.addEventListener('change', (e) => {
@@ -18,6 +29,74 @@ document.addEventListener('DOMContentLoaded', () => {
             targetGroup.style.display = 'flex';
         } else {
             targetGroup.style.display = 'none';
+        }
+    });
+
+    editHabitFrequency.addEventListener('change', (e) => {
+        if (e.target.value === 'weekly') {
+            editTargetGroup.style.display = 'flex';
+        } else {
+            editTargetGroup.style.display = 'none';
+        }
+    });
+
+    function openEditModal(id) {
+        const habit = habits.find(h => h.id === id);
+        if (!habit) return;
+
+        editHabitId.value = habit.id;
+        editHabitInput.value = habit.name;
+        editHabitFrequency.value = habit.frequency;
+
+        if (habit.frequency === 'weekly') {
+            editTargetGroup.style.display = 'flex';
+            editHabitTarget.value = habit.target || 3;
+        } else {
+            editTargetGroup.style.display = 'none';
+            editHabitTarget.value = 3;
+        }
+
+        editHabitModal.classList.add('show');
+    }
+
+    function closeEditModal() {
+        editHabitModal.classList.remove('show');
+        setTimeout(() => {
+            editHabitForm.reset();
+            editTargetGroup.style.display = 'none';
+        }, 300); // Wait for transition
+    }
+
+    closeModalBtn.addEventListener('click', closeEditModal);
+    cancelEditBtn.addEventListener('click', closeEditModal);
+
+    editHabitModal.addEventListener('click', (e) => {
+        if (e.target === editHabitModal) {
+            closeEditModal();
+        }
+    });
+
+    editHabitForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const id = editHabitId.value;
+        const habitIndex = habits.findIndex(h => h.id === id);
+
+        if (habitIndex === -1) return;
+
+        const newName = editHabitInput.value.trim();
+        if (newName) {
+            habits[habitIndex].name = newName;
+            habits[habitIndex].frequency = editHabitFrequency.value;
+            habits[habitIndex].target = editHabitFrequency.value === 'weekly' ? parseInt(editHabitTarget.value, 10) : 0;
+
+            // Recalculate streak based on potentially new target/frequency
+            recalculateStreaks(habits[habitIndex]);
+
+            saveHabits();
+            renderHabits();
+            closeEditModal();
+            showToast('Habit updated!');
         }
     });
 
@@ -257,6 +336,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div class="habit-actions">
+                    <button class="action-btn edit-btn" data-id="${habit.id}" title="Edit Habit">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
                     <button class="action-btn delete" data-id="${habit.id}" title="Delete Habit">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="3 6 5 6 21 6"></polyline>
@@ -277,6 +362,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!e.target.closest('.check-btn')) {
                     toggleHabit(habit.id);
                 }
+            });
+
+            const editBtn = card.querySelector('.edit-btn');
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openEditModal(habit.id);
             });
 
             const deleteBtn = card.querySelector('.delete');
