@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habits - Premium Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="header-content">
+                <h1 class="logo">Habits.</h1>
+                <div class="date-display" id="dateDisplay">Monday, Oct 12</div>
+            </div>
+            <p class="subtitle">Build better routines, day by day.</p>
+        </header>
+
+        <main>
+            <section class="add-habit-section">
+                <form id="addHabitForm" class="add-habit-form">
+                    <div class="input-glow">
+                        <input type="text" id="habitInput" placeholder="What habit do you want to build?" required autocomplete="off">
+                        <button type="submit" class="btn-primary" aria-label="Add Habit">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="habits-list-section">
+                <div class="habits-header">
+                    <h2>Your Habits</h2>
+                    <span class="habit-count" id="habitCount">0 Active</span>
+                </div>
+                
+                <div class="habits-grid" id="habitsGrid">
+                    <!-- Dynamic Habits List -->
+                </div>
+                
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">🌱</div>
+                    <h3>No habits yet</h3>
+                    <p>Start small. Add your first habit above to track your daily progress.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Habit added successfully!</div>
+
+    <script src="app.js"></script>
+</body>
+</html>
