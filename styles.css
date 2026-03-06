@@ -214,23 +214,10 @@ input[type="text"]::placeholder {
 
 /* Habit Card */
 .habit-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 20px;
     padding: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    transition: var(--transition-smooth);
-    animation: slideUp 0.4s ease forwards;
-}
-
-.habit-card:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
 
 .habit-info {
@@ -264,18 +251,6 @@ input[type="text"]::placeholder {
 .check-btn:hover {
     border-color: var(--accent-color);
     background: rgba(99, 102, 241, 0.1);
-}
-
-.habit-card.completed .check-btn {
-    background: var(--success-color);
-    border-color: var(--success-color);
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
-}
-
-.habit-card.completed .check-btn svg {
-    opacity: 1;
-    transform: scale(1);
-    animation: checkPop 0.4s ease forwards;
 }
 
 .habit-details h3 {
@@ -314,7 +289,7 @@ input[type="text"]::placeholder {
     transition: var(--transition-smooth);
 }
 
-.habit-card:hover .habit-actions {
+.habit-card-container:hover .habit-actions {
     opacity: 1;
     transform: translateX(0);
 }
@@ -340,6 +315,112 @@ input[type="text"]::placeholder {
 .action-btn.delete:hover {
     background: rgba(239, 68, 68, 0.2);
     color: var(--danger-color);
+}
+
+/* Calendar Visualization */
+.habit-card-container {
+    display: flex;
+    flex-direction: column;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    transition: var(--transition-smooth);
+    animation: slideUp 0.4s ease forwards;
+    overflow: hidden;
+}
+
+.habit-card-container:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.habit-card-container.completed .habit-card .check-btn {
+    background: var(--success-color);
+    border-color: var(--success-color);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
+.habit-card-container.completed .habit-card .check-btn svg {
+    opacity: 1;
+    transform: scale(1);
+    animation: checkPop 0.4s ease forwards;
+}
+
+.habit-card-container.completed .habit-details h3 {
+    color: var(--text-secondary);
+    text-decoration: line-through;
+    text-decoration-color: var(--text-secondary);
+}
+
+.habit-card {
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: transparent;
+    border: none;
+}
+
+.habit-calendar-wrapper {
+    display: none;
+    padding: 0 1.25rem 1.25rem 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    animation: fadeIn 0.3s ease;
+}
+
+.habit-calendar-wrapper.show {
+    display: block;
+}
+
+.calendar-header-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+    margin-top: 1rem;
+}
+
+.calendar-header-cell {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.03);
+    transition: var(--transition-smooth);
+}
+
+.calendar-day.empty {
+    background: transparent;
+}
+
+.calendar-day.active {
+    background: var(--success-color);
+    color: white;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+}
+
+.calendar-day.today {
+    border: 1px solid var(--accent-glow);
 }
 
 .empty-state {
