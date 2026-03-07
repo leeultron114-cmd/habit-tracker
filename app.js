@@ -22,7 +22,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalBtn = document.getElementById('closeModalBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
 
+    // Date Navigation Elements
+    const prevDateBtn = document.getElementById('prevDateBtn');
+    const nextDateBtn = document.getElementById('nextDateBtn');
+
+    // Quote Elements
+    const quoteText = document.getElementById('quoteText');
+    const quoteAuthor = document.getElementById('quoteAuthor');
+
     let habits = JSON.parse(localStorage.getItem('habits')) || [];
+    let currentSelectedDate = new Date();
+
+    const fallbackQuotes = [
+        { text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Aristotle" },
+        { text: "Motivation is what gets you started. Habit is what keeps you going.", author: "Jim Ryun" },
+        { text: "The secret of your future is hidden in your daily routine.", author: "Mike Murdock" },
+        { text: "Successful people are simply those with successful habits.", author: "Brian Tracy" },
+        { text: "Small daily improvements over time lead to stunning results.", author: "Robin Sharma" },
+        { text: "First we make our habits, then our habits make us.", author: "Charles C. Noble" },
+        { text: "Depending on what they are, our habits will either make us or break us.", author: "Sean Covey" },
+        { text: "Good habits are worth being fanatical about.", author: "John Irving" },
+        { text: "Success is the product of daily habits—not once-in-a-lifetime transformations.", author: "James Clear" },
+        { text: "Chains of habit are too light to be felt until they are too heavy to be broken.", author: "Warren Buffett" }
+    ];
 
     habitFrequency.addEventListener('change', (e) => {
         if (e.target.value === 'weekly') {
@@ -100,9 +122,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    async function fetchQuote() {
+        try {
+            // Using a reliable open API. If it fails (CORS/offline), we use fallbacks.
+            const response = await fetch('https://api.quotable.io/random?tags=inspirational|success');
+            if (response.ok) {
+                const data = await response.json();
+                quoteText.textContent = `"${data.content}"`;
+                quoteAuthor.textContent = `- ${data.author}`;
+                return;
+            }
+        } catch (error) {
+            console.log('Using fallback quotes due to API error:', error);
+        }
+
+        // Fallback
+        const randomQuote = fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
+        quoteText.textContent = `"${randomQuote.text}"`;
+        quoteAuthor.textContent = `- ${randomQuote.author}`;
+    }
+
     function init() {
         updateDateDisplay();
         renderHabits();
+        fetchQuote();
     }
 
     function getLocalDateString() {
@@ -113,10 +156,60 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${year}-${month}-${day}`;
     }
 
-    function updateDateDisplay() {
-        const options = { weekday: 'long', month: 'short', day: 'numeric' };
-        dateDisplay.textContent = new Date().toLocaleDateString('en-US', options);
+    function getSelectedDateString() {
+        const d = currentSelectedDate;
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
+
+    function updateDateDisplay() {
+        const todayStr = getLocalDateString();
+        const selectedStr = getSelectedDateString();
+
+        let prefix = '';
+        if (todayStr === selectedStr) {
+            prefix = 'Today, ';
+            nextDateBtn.disabled = true;
+        } else {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yYear = yesterday.getFullYear();
+            const yMonth = String(yesterday.getMonth() + 1).padStart(2, '0');
+            const yDay = String(yesterday.getDate()).padStart(2, '0');
+            const yesterdayStr = `${yYear}-${yMonth}-${yDay}`;
+
+            if (yesterdayStr === selectedStr) {
+                prefix = 'Yesterday, ';
+            }
+            nextDateBtn.disabled = false;
+        }
+
+        const options = { month: 'short', day: 'numeric' };
+        if (!prefix) {
+            options.weekday = 'short';
+        }
+
+        const dateFormatted = currentSelectedDate.toLocaleDateString('en-US', options);
+        dateDisplay.textContent = prefix ? `${prefix}${dateFormatted}` : dateFormatted;
+    }
+
+    prevDateBtn.addEventListener('click', () => {
+        currentSelectedDate.setDate(currentSelectedDate.getDate() - 1);
+        updateDateDisplay();
+        renderHabits();
+    });
+
+    nextDateBtn.addEventListener('click', () => {
+        const todayStr = getLocalDateString();
+        const selectedStr = getSelectedDateString();
+        if (todayStr !== selectedStr) {
+            currentSelectedDate.setDate(currentSelectedDate.getDate() + 1);
+            updateDateDisplay();
+            renderHabits();
+        }
+    });
 
     function saveHabits() {
         localStorage.setItem('habits', JSON.stringify(habits));
@@ -155,14 +248,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const habit = habits.find(h => h.id === id);
         if (!habit) return;
 
-        const today = getLocalDateString();
-        const isCompletedToday = habit.completedDates.includes(today);
+        const targetDateStr = getSelectedDateString();
+        const isCompletedTargetDate = habit.completedDates.includes(targetDateStr);
 
-        if (isCompletedToday) {
-            habit.completedDates = habit.completedDates.filter(date => date !== today);
+        if (isCompletedTargetDate) {
+            habit.completedDates = habit.completedDates.filter(date => date !== targetDateStr);
         } else {
-            if (!habit.completedDates.includes(today)) {
-                habit.completedDates.push(today);
+            if (!habit.completedDates.includes(targetDateStr)) {
+                habit.completedDates.push(targetDateStr);
             }
         }
 
@@ -328,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderHabits() {
         habitsGrid.innerHTML = '';
-        const today = getLocalDateString();
+        const targetDateStr = getSelectedDateString();
 
         const activeHabits = habits.length;
         habitCountDisplay.textContent = `${activeHabits} Active`;
@@ -343,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         habits.forEach((habit, index) => {
-            const isCompletedToday = habit.completedDates.includes(today);
+            const isCompletedTargetDate = habit.completedDates.includes(targetDateStr);
             recalculateStreaks(habit);
 
             const isWeekly = habit.frequency === 'weekly';
@@ -351,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const targetText = isWeekly ? `🎯 ${habit.currentWeekProgress || 0}/${habit.target} this wk` : `Total: ${habit.completedDates.length}`;
 
             const card = document.createElement('div');
-            card.className = `habit-card-container ${isCompletedToday ? 'completed' : ''}`;
+            card.className = `habit-card-container ${isCompletedTargetDate ? 'completed' : ''}`;
             card.style.animationDelay = `${index * 0.05}s`;
 
             card.innerHTML = `
@@ -447,6 +540,17 @@ document.addEventListener('DOMContentLoaded', () => {
     init();
 
     setInterval(() => {
-        updateDateDisplay();
+        // Only update if we are currently viewing today, otherwise keep historical view
+        const todayStr = getLocalDateString();
+        const selectedStr = getSelectedDateString();
+        if (todayStr === selectedStr) {
+            // Keep currentSelectedDate up-to-the-minute if day rolls over
+            const now = new Date();
+            if (now.getDate() !== currentSelectedDate.getDate()) {
+                currentSelectedDate = now;
+                updateDateDisplay();
+                renderHabits();
+            }
+        }
     }, 60000);
 });

@@ -14,10 +14,31 @@
         <header>
             <div class="header-content">
                 <h1 class="logo">Habits.</h1>
-                <div class="date-display" id="dateDisplay">Monday, Oct 12</div>
+                <div class="date-nav">
+                    <button id="prevDateBtn" class="date-nav-btn" aria-label="Previous day">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <div class="date-display" id="dateDisplay">Monday, Oct 12</div>
+                    <button id="nextDateBtn" class="date-nav-btn" aria-label="Next day" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
             </div>
             <p class="subtitle">Build better routines, day by day.</p>
         </header>
+
+        <section class="quote-section" id="quoteSection">
+            <div class="quote-content">
+                <p id="quoteText" class="quote-text">"Loading inspiration..."</p>
+                <p id="quoteAuthor" class="quote-author"></p>
+            </div>
+        </section>
 
         <main>
             <section class="add-habit-section">
@@ -111,7 +132,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" id="cancelEditBtn">Cancel</button>
                     <button type="submit" class="btn-primary edit-save-btn">Save</button>

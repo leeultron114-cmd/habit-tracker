@@ -63,22 +63,107 @@ header {
     letter-spacing: -1px;
 }
 
-.date-display {
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    font-weight: 500;
-    padding: 0.4rem 1rem;
+.date-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 20px;
+    padding: 0.2rem;
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.date-nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.date-nav-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.date-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.date-display {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.2rem 0.5rem;
+    min-width: 140px;
+    text-align: center;
 }
 
 .subtitle {
     color: var(--text-secondary);
     font-size: 1.1rem;
     font-weight: 300;
+}
+
+/* Quote Section */
+.quote-section {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    margin-bottom: 0.5rem;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: slideUpFade 0.6s ease forwards 0.2s;
+}
+
+.quote-section::before {
+    content: '"';
+    position: absolute;
+    top: -10px;
+    left: 15px;
+    font-size: 5rem;
+    color: rgba(255, 255, 255, 0.03);
+    font-family: serif;
+    line-height: 1;
+}
+
+.quote-text {
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--text-primary);
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+    font-weight: 300;
+}
+
+.quote-author {
+    font-size: 0.85rem;
+    color: var(--accent-color);
+    text-align: right;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+@keyframes slideUpFade {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Add Habit Form */
